@@ -1,0 +1,93 @@
+select * from Customers;
+select * from Loans;
+update Loans l join Customers c on l.CustomerID = c.CustomerID
+set l.InterestRate = l.InterestRate-1
+where c.Age>60;
+select * from Loans;
+
+
+create procedure UpdateIsVIP()
+	begin
+		update Customers set IsVIP = 'TRUE' where Balance>10000;
+    end $$
+SET SQL_SAFE_UPDATES = 0;
+call UpdateIsVIP();
+select * from Customers;
+
+
+DELIMITER $$
+create procedure Remainder()
+begin
+	select c.CustomerID, c.CustomerName, l.loanID, l.DueDate from Customers c
+	join Loans l on c.CustomerID = l.CustomerID where l.DueDate 
+    between curdate() and date_add(curdate(), interval 30 day);
+end $$
+call Remainder();
+
+
+DELIMITER $$
+create procedure Remainder()
+begin
+	select c.CustomerID, c.CustomerName, l.loanID, l.DueDate from Customers c
+	join Loans l on c.CustomerID = l.CustomerID where l.DueDate 
+    between curdate() and date_add(curdate(), interval 30 day);
+end $$
+call Remainder();
+
+Exercise - 3
+
+DELIMITER $$
+CREATE PROCEDURE ProcessMonthlyInterest()
+BEGIN
+    UPDATE Accounts
+    SET Balance = Balance + (Balance * 0.01)
+    WHERE AccountType = 'SAVINGS';
+END $$
+DELIMITER ;
+call ProcessMonthlyInterest();
+
+
+delimiter $$
+create procedure UpdateEmployeeBonus(IN dept INT, IN bonus DECIMAL(5, 2))
+begin
+	if bonus <= 20 then
+		update Employees
+		set salary = salary + (salary * bonus/100)
+        where DepartmentID = dept;
+	else 
+		SELECT 'Bonus cannot exceed more than 20%' as message;
+	end if;
+end $$
+delimiter ;
+call UpdateEmployeeBonus(20, 18);
+
+
+DELIMITER $$
+CREATE PROCEDURE TransferFundz
+(
+    IN SourceAccount INT,
+    IN DestinationAccount INT,
+    IN Amount DECIMAL(10,2)
+)
+BEGIN
+    DECLARE CurrentBalance DECIMAL(10,2);
+    SELECT Balance
+    INTO CurrentBalance
+    FROM accounts
+    WHERE AccountID = SourceAccount;
+    IF CurrentBalance >= Amount THEN
+        UPDATE accounts
+        SET Balance = Balance - Amount
+        WHERE AccountID = SourceAccount;
+
+        UPDATE accounts
+        SET Balance = Balance + Amount
+        WHERE AccountID = DestinationAccount;
+        SELECT 'Transfer Successful' AS Message;
+        
+    ELSE
+        SELECT 'Insufficient Balance' AS Message;
+    END IF;
+END $$
+DELIMITER ;
+CALL TransferFundz(201,204,5000);
